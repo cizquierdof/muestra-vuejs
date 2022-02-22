@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="author" content="Carlos Izquierdo">
+  <meta name="description"
+    content="Esta es una aplicación hecha con vue.js simple. El objetivo es capturar y verificar la validez de una muestra de págians para una auditoría de accesibilida">
+  <title>Verificar Muestra</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous" />
+
+  <!-- <script type="text/javascript">
+
+  var bPreguntar = true;
+
+  window.onbeforeunload = preguntarAntesDeSalir;
+
+  function preguntarAntesDeSalir() {
+    if (bPreguntar)
+      return "¿Seguro que quieres salir?";
+  }
+
+  </script> -->
+</head>
+
+<body>
+
+  <div id="app">
+    <div id="main" class="container">
+      <h1 class="h3">Verificación de Muestras</h1>
+      <div class="row">
+        <div id="siteid" class="col bg-dark m-1 text-white p-2">
+          <h2 class="h4">Status de la muestra</h3>
+            <!-------------------------------Datos generales del sitio---------------------------->
+            <form @submit.prevent>
+              <label for="sitename" class="col-form-label-sm col-form-label">Nombre</label>
+              <input class="form-control-sm form-control" type="text" id="sitename" placeholder="Nombre del sitio"
+                v-model="siteName" />
+              <label for="sitedomain" class="col-form-label-sm col-form-label">Dominio</label>
+              <input class="form-control-sm form-control" type="text" id="sitedomain" placeholder="Dominio del sitio"
+                v-model="siteDomain" />
+              <!----------------------------INDICADORES DE PARÁMETROS CUMPLIDOS--------------------->
+              <div class="mt-4 mb-3">
+                <span class="badge" v-bind:class="[hasHome ?'bg-success':'bg-danger' ]">
+                  HOME
+                </span>
+                <span class="badge" v-bind:class="[hasDecAcc ?'bg-success':'bg-danger' ]">
+                  DEC. ACCES.
+                </span>
+                <span class="badge bg-secondary position-relative">
+                  URLS
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                  v-bind:class="[numUrl<25 ?'bg-success':'bg-danger' ]">
+                    {{numUrl}}
+                  </span>
+                </span>
+                <span class="badge bg-secondary position-relative ms-2">
+                  Aleatorias
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                  v-bind:class="[numAleatory>=numUrl/10 ?'bg-success':'bg-danger' ]">
+                    {{numAleatory}}
+                  </span>
+                </span>
+              </div>
+              <!------------------------------Botones comandos------------------------------------->
+              <div class="btn-group-sm">
+                <button class="btn btn-primary" @click="saveJson"
+                  :disabled='!siteId||!siteDomain||siteWebPages.length===0'>Exportar JSON
+                </button>
+                <button class="btn btn-primary" @click="saveBatch"
+                  :disabled='!siteId||!siteDomain||siteWebPages.length===0'>Exportar Batch
+                </button>
+
+                  <button class="btn btn-danger" @click="reset" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Borrar todos los datos" :disabled='!siteId||!siteDomain||siteWebPages.length===0'>
+                    Reset
+                  </button>
+              </div>
+            </form>
+        </div>
+        <div id="pages" class="col bg-secondary text-white m-1 p-2">
+          <h2 class="h4">Nueva página</h2>
+          <form @submit.prevent class="row-cols-2">
+            <label for="inurl">URL</label>
+            <input class="form-control-sm form-control" id="inurl" type="text" placeholder="URL" v-model="inUrl"
+              required />
+            <label for="intype">Tipo de página</label>
+            <select class="form-select-sm form-select" id="intype" v-model="inType" required>
+              <option disabled value="">Tipo de página</option>
+              <option v-for="type in pageTypes" v-bind:value="type.value">
+                {{type.text}}
+              </option>
+            </select>
+            <label for="inshortname">Nombre corto</label>
+            <input class="form-control-sm form-control" id="inshortname" type="text" placeholder="Nombre corto"
+              v-model="inShortName" required />
+            <label for="inbreadcrumb">Migas</label>
+            <input class="form-control-sm form-control" id="inbreadcrumb" type="text" placeholder="Migas"
+              v-model="inBreadcrumb" required />
+            <button type="submit" class="btn btn-primary btn- mt-2" @click="addItem">Añadir</button>
+
+          </form>
+        </div>
+
+      </div>
+      <div class="row bg-light ">
+        <h3 class="h5">LISTA DE URL: {{siteId}}</h3>
+        <div id="lista">
+          <table class="table">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Shortname</th>
+                <th scope="col">URL</th>
+                <th scope="col">
+                  <button class="btn btn-primary" @click="orden" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Ordenar por tipo" :disabled='!siteId||!siteDomain||siteWebPages.length===0'>Tipo</button>
+
+                </th>
+                <th scope="col">BREADCRUMB</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-bind:class="[!item.webPageUrl||!item.breadcrumb||!item.webPageType||!item.shortName ?'table-danger':'']"
+                v-for="(item, index) in siteWebPages">
+                <td>{{item.shortName}}</td>
+                <td>{{item.webPageUrl}}</td>
+                <td>{{item.webPageType}}</td>
+                <td>{{item.breadcrumb}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+
+
+      </div>
+
+    </div>
+  </div>
+  <!-- <script src="./saved_site.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+    crossorigin="anonymous"></script>
+  <script src="./App.js"></script>
+  <script>
+    //Habilitar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  </script>
+</body>
+
+</html>
