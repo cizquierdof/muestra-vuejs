@@ -22,11 +22,13 @@ const app = new Vue({
     ],
     siteName: "",
     siteDomain: "",
+    indice: null,
     inUrl: "",
     inType: "",
     inShortName: "",
     inBreadcrumb: "",
     siteWebPages: [],
+    editMode: false,
   },
   mounted() {
     ///TODO obtener los datos de local storage
@@ -54,33 +56,31 @@ const app = new Vue({
   methods: {
     loadSite() {
       /******************TODO: función para cargar un json guardado******************* */
-          try {
-      this.siteName = savedSite[0].siteName;
-      this.siteDomain = savedSite[0].siteDomain;
-      this.siteWebPages = [...savedSite[0].siteWebPages];
-    } catch (error) {
-      console.log('No existen datos guardados');
-    }
+      try {
+        this.siteName = savedSite[0].siteName;
+        this.siteDomain = savedSite[0].siteDomain;
+        this.siteWebPages = [...savedSite[0].siteWebPages];
+      } catch (error) {
+        console.log("No existen datos guardados");
+      }
     },
     /*******
      * Organiza urlList
      */
     orden() {
-       const ordered = [];
-      this.pageTypes.forEach(
-        element => {
-          this.siteWebPages.map(
-            e => {
-              if(e.webPageType==element.value){ordered.push(e)}
-            }
-          )
-        }
-      )
-      this.siteWebPages = ordered
-      this.saveSite()
+      const ordered = [];
+      this.pageTypes.forEach((pageType) => {
+        this.siteWebPages.map((page) => {
+          if (page.webPageType == pageType.value) {
+            ordered.push(page);
+          }
+        });
+      });
+      this.siteWebPages = ordered;
+      this.saveSite();
     },
-      /**
-     * GUARDAR TRABAJO
+    /**
+     * GUARDAR TRABAJO EN LOCALSTORAGE
      */
     saveSite() {
       //convertir la lista de url en un blob
@@ -194,15 +194,47 @@ const app = new Vue({
         };
 
         this.siteWebPages.push(newPage);
-        this.saveSite()
+        this.saveSite();
         //bPreguntar = true;
       }
+    },
+    /***
+     * BORRA UNA URL
+     */
+    deleteItem(index) {
+      this.siteWebPages.splice(index, 1);
+      this.saveSite();
+    },
+    /********
+     * EDITA UNA URL
+     */
+    editItem(index) {
+      this.editMode = true;
+      this.indice = index;
+      this.inUrl = this.siteWebPages[index].webPageUrl;
+      this.inType = this.siteWebPages[index].webPageType;
+      this.inShortName = this.siteWebPages[index].shortName;
+      this.inBreadcrumb = this.siteWebPages[index].breadcrumb;
+    },
+    saveModified() {
+      const i = this.indice;
+      this.siteWebPages[i] = {
+        webPageUrl: this.inUrl,
+        webPageType: this.inType,
+        shortName: this.inShortName,
+        breadcrumb: this.inBreadcrumb,
+      };
+      this.indice = null;
+      this.inUrl = "";
+      this.inType = "";
+      this.inShortName = "";
+      this.inBreadcrumb = "";
+      this.editMode = false;
+      this.saveSite();
     },
   },
   computed: {
     /****************************************************** */
-
-    ///TODO: GUARDADO AUTOMÁTICO DEL TRABAJO ¿axios?
 
     //Recuperación de datos
     urlList: function () {

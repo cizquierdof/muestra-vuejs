@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./styles.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/50dfaad17b.css">
 
   <!-- <script type="text/javascript">
 
@@ -54,14 +55,14 @@
                 <span class="badge bg-secondary position-relative">
                   URLS
                   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
-                  v-bind:class="[numUrl<25 ?'bg-success':'bg-danger' ]">
+                    v-bind:class="[numUrl<25 ?'bg-success':'bg-danger' ]">
                     {{numUrl}}
                   </span>
                 </span>
                 <span class="badge bg-secondary position-relative ms-2">
                   Aleatorias
                   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
-                  v-bind:class="[numAleatory>=numUrl/10 ?'bg-success':'bg-danger' ]">
+                    v-bind:class="[numAleatory>=numUrl/10 ?'bg-success':'bg-danger' ]">
                     {{numAleatory}}
                   </span>
                 </span>
@@ -75,15 +76,16 @@
                   :disabled='!siteId||!siteDomain||siteWebPages.length===0'>Exportar Batch
                 </button>
 
-                  <button class="btn btn-danger" @click="reset" data-bs-toggle="tooltip" data-bs-placement="top"
-                    title="Borrar todos los datos" :disabled='!siteId||!siteDomain||siteWebPages.length===0'>
-                    Reset
-                  </button>
+                <button class="btn btn-danger" @click="reset" data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Borrar todos los datos" :disabled='!siteId||!siteDomain||siteWebPages.length===0'>
+                  Reset
+                </button>
               </div>
             </form>
         </div>
         <div id="pages" class="col bg-secondary text-white m-1 p-2">
           <h2 class="h4">Nueva página</h2>
+          <!----------------------------------------FORMULARIO DATOS PÁGINA---------------------->
           <form @submit.prevent class="row-cols-2">
             <label for="inurl">URL</label>
             <input class="form-control-sm form-control" id="inurl" type="text" placeholder="URL" v-model="inUrl"
@@ -101,7 +103,8 @@
             <label for="inbreadcrumb">Migas</label>
             <input class="form-control-sm form-control" id="inbreadcrumb" type="text" placeholder="Migas"
               v-model="inBreadcrumb" required />
-            <button type="submit" class="btn btn-primary btn- mt-2" @click="addItem">Añadir</button>
+            <button v-if="!editMode" type="submit" class="btn btn-primary btn- mt-2" @click="addItem">Añadir</button>
+            <button v-if="editMode" type="submit" class="btn btn-primary btn- mt-2" @click="saveModified">Modificar</button>
 
           </form>
         </div>
@@ -109,18 +112,20 @@
       </div>
       <div class="row bg-light ">
         <h3 class="h5">LISTA DE URL: {{siteId}}</h3>
+        <!----------------------------------TABLA DE RESULTADOS------------------------------------->
         <div id="lista">
           <table class="table">
             <thead class="thead-dark">
               <tr>
-                <th scope="col">Shortname</th>
+                <th scope="col">Nom. corto</th>
                 <th scope="col">URL</th>
                 <th scope="col">
                   <button class="btn btn-primary" @click="orden" data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Ordenar por tipo" :disabled='!siteId||!siteDomain||siteWebPages.length===0'>Tipo</button>
 
                 </th>
-                <th scope="col">BREADCRUMB</th>
+                <th scope="col">Migas</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -131,10 +136,17 @@
                 <td>{{item.webPageUrl}}</td>
                 <td>{{item.webPageType}}</td>
                 <td>{{item.breadcrumb}}</td>
+                <td>
+                  <button class="btn btn-danger" @click="deleteItem(index)">
+                    <span class="fa fa-trash"></span>
+                  </button>
+                  <button class="btn btn-warning" @click="editItem(index)">
+                    <span class="fa fa-edit"></span>
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
-
         </div>
 
 

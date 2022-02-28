@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "express": "^4.17.3"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "muestra-vuejs",
+  "description": "",
+  "version": "1.0.0",
+  "main": "App.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cizquierdof/muestra-vuejs.git"
+  },
+  "author": "Carlos Izquierdo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cizquierdof/muestra-vuejs/issues"
+  },
+  "homepage": "https://github.com/cizquierdof/muestra-vuejs#readme"
+}
